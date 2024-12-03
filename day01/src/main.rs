@@ -5,22 +5,23 @@ use anyhow::Result;
 
 fn main() -> Result<()> {
     let path = "puzzle_input.tsv";
-    let (left_locations, right_locations) = read_location_ids(path)?;
+    let (mut left_locations, mut right_locations) = read_location_ids(path)?;
 
-    // Print the lists to verify
-    println!("Left List: {:?}", left_locations);
-    println!("Right List: {:?}", right_locations);
+    // Sort the lists
+    left_locations.sort();
+    right_locations.sort();
+
+    let distances: Vec<i32> = left_locations.into_iter()
+        .zip(right_locations.into_iter())
+        .map(|(left, right)| (left - right).abs())
+        .collect();
+
+    let total_distance: i32 = distances.iter().sum();
+
+    // Print the total distance
+    println!("Total distance: {}", total_distance);
 
     Ok(())
-}
-
-// Read lines from a file
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where
-    P: AsRef<Path>,
-{
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
 }
 
 // Split a line into a tuple of location ids
