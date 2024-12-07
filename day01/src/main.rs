@@ -4,7 +4,7 @@ use std::path::Path;
 use anyhow::Result;
 
 fn main() -> Result<()> {
-    let path = "puzzle_input.tsv";
+    let path: &str = "puzzle_input.tsv";
     let (mut left_locations, mut right_locations) = read_location_ids(path)?;
 
     // Sort the lists
@@ -37,8 +37,8 @@ fn read_location_ids<P>(filename: P) -> Result<(Vec<i32>, Vec<i32>)>
 where
     P: AsRef<Path>,
 {
-    let file = File::open(filename)?;
-    let lines = io::BufReader::new(file).lines();
+    let file: File = File::open(filename)?;
+    let lines: io::Lines<io::BufReader<File>> = io::BufReader::new(file).lines();
     let mut left_locations: Vec<i32> = Vec::new();
     let mut right_locations: Vec<i32> = Vec::new();
 
