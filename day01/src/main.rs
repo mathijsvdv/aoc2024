@@ -19,6 +19,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
+// Compute the total distance between two sets of locations
 fn compute_total_distance(left_locations: Vec<i32>, right_locations: Vec<i32>) -> i32 {
     let distances: Vec<i32> = left_locations.into_iter()
         .zip(right_locations.into_iter())
