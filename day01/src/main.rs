@@ -56,7 +56,7 @@ fn _compute_similarity_score_from_counters(left_counter: HashMap<i32, i32>, righ
     let mut score: i32 = 0;
     for (id, count) in left_counter.iter() {
         if let Some(right_count) = right_counter.get(id) {
-            score += count * right_count;
+            score += id * count * right_count;
         }
     }
     score
