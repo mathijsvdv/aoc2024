@@ -13,19 +13,13 @@ fn main() -> Result<()> {
     right_locations.sort();
 
     let total_distance: i32 = compute_total_distance(&left_locations, &right_locations);
-    let left_occurrences: HashMap<i32, i32> = count_occurrences(&left_locations);
-    let right_occurrences: HashMap<i32, i32> = count_occurrences(&right_locations);
-
-    // Print the number of occurrences of each location id
-    for (id, count) in left_occurrences.iter() {
-        println!("Left location id: {}, count: {}", id, count);
-    }
-    for (id, count) in right_occurrences.iter() {
-        println!("Right location id: {}, count: {}", id, count);
-    }
+    let similarity_score: i32 = compute_similarity_score(&left_locations, &right_locations);
 
     // Print the total distance
     println!("Total distance: {}", total_distance);
+
+    // Print the similarity score
+    println!("Similarity score: {}", similarity_score);
 
     Ok(())
 }
@@ -39,14 +33,33 @@ fn compute_total_distance(left_locations: &Vec<i32>, right_locations: &Vec<i32>)
     distances.iter().sum()
 }
 
+// Compute the similarity score between two sets of location ids
+fn compute_similarity_score(left_locations: &Vec<i32>, right_locations: &Vec<i32>) -> i32 {
+    let left_counter: HashMap<i32, i32> = _get_counter(left_locations);
+    let right_counter: HashMap<i32, i32> = _get_counter(right_locations);
+    _compute_similarity_score_from_counters(left_counter, right_counter)
+}
+
+
 // Count number of occurrences of each location id
-fn count_occurrences(location_ids: &Vec<i32>) -> HashMap<i32, i32> {
-    let mut occurrences: HashMap<i32, i32> = HashMap::new();
+fn _get_counter(location_ids: &Vec<i32>) -> HashMap<i32, i32> {
+    let mut counter: HashMap<i32, i32> = HashMap::new();
     for id in location_ids {
-        let count = occurrences.entry(*id).or_insert(0);
+        let count = counter.entry(*id).or_insert(0);
         *count += 1;
     }
-    occurrences
+    counter
+}
+
+// Compute the similarity score between two sets of location ids from their counters
+fn _compute_similarity_score_from_counters(left_counter: HashMap<i32, i32>, right_counter: HashMap<i32, i32>) -> i32 {
+    let mut score: i32 = 0;
+    for (id, count) in left_counter.iter() {
+        if let Some(right_count) = right_counter.get(id) {
+            score += count * right_count;
+        }
+    }
+    score
 }
 
 // Split a line into a tuple of location ids
