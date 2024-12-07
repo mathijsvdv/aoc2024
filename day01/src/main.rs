@@ -43,9 +43,9 @@ fn compute_similarity_score(left_locations: &Vec<i32>, right_locations: &Vec<i32
 // Compute the similarity score between two sets of location ids from their counters
 fn _compute_similarity_score_from_counters(left_counter: Counter<&i32>, right_counter: Counter<&i32>) -> i32 {
     let mut score: i32 = 0;
-    for (id, count) in left_counter.iter() {
-        if let Some(right_count) = right_counter.get(id) {
-            score += *id * (*count as i32) * (*right_count as i32);
+    for (id, left_count) in left_counter.into_iter() {
+        if let Some(&right_count) = right_counter.get(id) {
+            score += id * (left_count as i32) * (right_count as i32);
         }
     }
     score
