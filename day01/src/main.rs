@@ -45,7 +45,7 @@ fn _compute_similarity_score_from_counters(left_counter: Counter<&i32>, right_co
     let mut score: i32 = 0;
     for (id, left_count) in left_counter.into_iter() {
         if let Some(&right_count) = right_counter.get(id) {
-            score += id * (left_count as i32) * (right_count as i32);
+            score += id * (left_count * right_count) as i32;
         }
     }
     score
