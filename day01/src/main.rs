@@ -11,17 +11,20 @@ fn main() -> Result<()> {
     left_locations.sort();
     right_locations.sort();
 
-    let distances: Vec<i32> = left_locations.into_iter()
-        .zip(right_locations.into_iter())
-        .map(|(left, right)| (left - right).abs())
-        .collect();
-
-    let total_distance: i32 = distances.iter().sum();
+    let total_distance: i32 = compute_total_distance(left_locations, right_locations);
 
     // Print the total distance
     println!("Total distance: {}", total_distance);
 
     Ok(())
+}
+
+fn compute_total_distance(left_locations: Vec<i32>, right_locations: Vec<i32>) -> i32 {
+    let distances: Vec<i32> = left_locations.into_iter()
+        .zip(right_locations.into_iter())
+        .map(|(left, right)| (left - right).abs())
+        .collect();
+    distances.iter().sum()
 }
 
 // Split a line into a tuple of location ids
