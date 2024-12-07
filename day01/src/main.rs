@@ -1,8 +1,8 @@
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 use anyhow::Result;
+use counter::Counter;
 
 fn main() -> Result<()> {
     let path: &str = "puzzle_input.tsv";
@@ -26,8 +26,8 @@ fn main() -> Result<()> {
 
 // Compute the total distance between two sets of locations
 fn compute_total_distance(left_locations: &Vec<i32>, right_locations: &Vec<i32>) -> i32 {
-    let distances: Vec<i32> = left_locations.into_iter()
-        .zip(right_locations.into_iter())
+    let distances: Vec<i32> = left_locations.iter()
+        .zip(right_locations.iter())
         .map(|(left, right)| (left - right).abs())
         .collect();
     distances.iter().sum()
@@ -35,28 +35,17 @@ fn compute_total_distance(left_locations: &Vec<i32>, right_locations: &Vec<i32>)
 
 // Compute the similarity score between two sets of location ids
 fn compute_similarity_score(left_locations: &Vec<i32>, right_locations: &Vec<i32>) -> i32 {
-    let left_counter: HashMap<i32, i32> = _get_counter(left_locations);
-    let right_counter: HashMap<i32, i32> = _get_counter(right_locations);
+    let left_counter: Counter<_> = left_locations.iter().collect();
+    let right_counter: Counter<_> = right_locations.iter().collect();
     _compute_similarity_score_from_counters(left_counter, right_counter)
 }
 
-
-// Count number of occurrences of each location id
-fn _get_counter(location_ids: &Vec<i32>) -> HashMap<i32, i32> {
-    let mut counter: HashMap<i32, i32> = HashMap::new();
-    for id in location_ids {
-        let count = counter.entry(*id).or_insert(0);
-        *count += 1;
-    }
-    counter
-}
-
 // Compute the similarity score between two sets of location ids from their counters
-fn _compute_similarity_score_from_counters(left_counter: HashMap<i32, i32>, right_counter: HashMap<i32, i32>) -> i32 {
+fn _compute_similarity_score_from_counters(left_counter: Counter<&i32>, right_counter: Counter<&i32>) -> i32 {
     let mut score: i32 = 0;
     for (id, count) in left_counter.iter() {
         if let Some(right_count) = right_counter.get(id) {
-            score += id * count * right_count;
+            score += *id * (*count as i32) * (*right_count as i32);
         }
     }
     score
