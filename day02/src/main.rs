@@ -11,12 +11,10 @@ fn main() {
 
 #[derive(Debug)]
 struct Report {
-    levels: Vec<i32>
+    levels: Vec<i32>,
 }
 
-
 impl Report {
-
     // Check if the levels are monotonic
     fn is_monotonic(&self) -> bool {
         let mut increasing: bool = true;
@@ -50,12 +48,10 @@ impl Report {
     }
 }
 
-
 // Get the number of safe reports
 fn count_safe_reports(reports: Vec<Report>) -> usize {
     reports.into_iter().filter(|r| r.is_safe()).count()
 }
-
 
 // Read reports from the reports.txt file
 fn read_reports() -> Vec<Report> {
@@ -65,7 +61,8 @@ fn read_reports() -> Vec<Report> {
 
     for line in reader.lines() {
         let line: String = line.expect("Could not read line");
-        let levels: Vec<i32> = line.split_whitespace()
+        let levels: Vec<i32> = line
+            .split_whitespace()
             .map(|s: &str| s.parse().expect("Could not parse number"))
             .collect();
         reports.push(Report { levels });
