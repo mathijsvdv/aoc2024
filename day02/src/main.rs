@@ -8,12 +8,15 @@ fn main() {
     println!("Number of safe reports: {}", n_safe_reports);
 }
 
+
+#[derive(Clone)]
 #[derive(Debug)]
 struct ProblemDampener {}
 
 #[derive(Debug)]
 struct Report {
     levels: Vec<i32>,
+    problem_dampener: Option<ProblemDampener>,
 }
 
 
@@ -55,6 +58,24 @@ fn safe_levels(levels: &Vec<i32>) -> bool {
 }
 
 
+impl ProblemDampener {
+    // Dampen any problems in the levels by removing one level at a time and checking if the levels are safe
+    fn dampen(&self, levels: &mut Vec<i32>) -> bool {
+        let mut safe: bool = true;
+        for i in 0..levels.len() {
+            let level = levels[i];
+            levels.remove(i);
+            safe = safe_levels(&levels);
+            if safe {
+                break;
+            }
+            levels.insert(i, level);
+        }
+        safe
+    }
+}
+
+
 impl Report {
     // A report is safe if it is monotonic and the difference between each level is within 1 and 3
     fn is_safe(&self) -> bool {
@@ -62,14 +83,9 @@ impl Report {
         let mut levels: Vec<i32> = self.levels.clone();
 
         if !safe {
-            for i in 0..self.levels.len() {
-                let level = levels[i];
-                levels.remove(i);
-                safe = safe_levels(&levels);
-                levels.insert(i, level);
-                if safe {
-                    break;
-                }
+            match &self.problem_dampener {
+                Some(dampener) => {safe = dampener.dampen(&mut levels)},
+                None => {}
             }
         }
 
@@ -88,14 +104,14 @@ fn read_reports() -> Vec<Report> {
     let mut reports: Vec<Report> = Vec::new();
     let file: File = File::open("reports.txt").expect("Could not open file");
     let reader: BufReader<File> = BufReader::new(file);
-
+    let problem_dampener: Option<ProblemDampener> = Some(ProblemDampener {});
     for line in reader.lines() {
         let line: String = line.expect("Could not read line");
         let levels: Vec<i32> = line
             .split_whitespace()
             .map(|s: &str| s.parse().expect("Could not parse number"))
             .collect();
-        reports.push(Report { levels });
+        reports.push(Report { levels, problem_dampener: problem_dampener.clone() });
     }
 
     reports
