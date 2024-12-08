@@ -16,6 +16,8 @@ struct Report {
 
 
 impl Report {
+
+    // Check if the levels are monotonic
     fn is_monotonic(&self) -> bool {
         let mut increasing: bool = true;
         let mut decreasing: bool = true;
@@ -31,6 +33,7 @@ impl Report {
         increasing || decreasing
     }
 
+    // Check if the difference between each level is within the bounds
     fn difference_within_bounds(&self, lower: u32, upper: u32) -> bool {
         let mut differences: Vec<u32> = Vec::new();
 
@@ -41,6 +44,7 @@ impl Report {
         differences.iter().all(|&x| x >= lower && x <= upper)
     }
 
+    // A report is safe if it is monotonic and the difference between each level is within 1 and 3
     fn is_safe(&self) -> bool {
         self.is_monotonic() && self.difference_within_bounds(1, 3)
     }
