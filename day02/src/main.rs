@@ -2,8 +2,6 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 fn main() {
-    println!("Hello, world!");
-
     let reports: Vec<Report> = read_reports();
     let n_safe_reports: usize = count_safe_reports(reports);
     println!("Number of safe reports: {}", n_safe_reports);
