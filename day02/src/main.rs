@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::cmp::Ordering;
 
 fn main() {
     let reports: Vec<Report> = read_reports();
@@ -19,10 +20,10 @@ impl Report {
         let mut decreasing: bool = true;
 
         for window in self.levels.windows(2) {
-            if window[0] < window[1] {
-                decreasing = false;
-            } else if window[0] > window[1] {
-                increasing = false;
+            match window[0].cmp(&window[1]) {
+                Ordering::Less => decreasing = false,
+                Ordering::Greater => increasing = false,
+                Ordering::Equal => {}
             }
         }
 
