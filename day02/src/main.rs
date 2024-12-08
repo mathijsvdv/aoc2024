@@ -105,6 +105,7 @@ fn read_reports() -> Vec<Report> {
     let file: File = File::open("reports.txt").expect("Could not open file");
     let reader: BufReader<File> = BufReader::new(file);
     let problem_dampener: Option<ProblemDampener> = Some(ProblemDampener {});
+    // let problem_dampener: Option<ProblemDampener> = None;
     for line in reader.lines() {
         let line: String = line.expect("Could not read line");
         let levels: Vec<i32> = line
