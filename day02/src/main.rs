@@ -9,50 +9,78 @@ fn main() {
 }
 
 #[derive(Debug)]
+struct ProblemDampener {}
+
+#[derive(Debug)]
 struct Report {
     levels: Vec<i32>,
 }
 
+
+// Levels are strictly monotonic if they are either strictly increasing or strictly decreasing
+fn are_strictly_monotonic(levels: &Vec<i32>) -> bool {
+    let mut increasing: bool = true;
+    let mut decreasing: bool = true;
+
+    for window in levels.windows(2) {
+        match window[0].cmp(&window[1]) {
+            Ordering::Less => decreasing = false,
+            Ordering::Greater => increasing = false,
+            Ordering::Equal => {decreasing = false; increasing = false;}
+        }
+        if !increasing && !decreasing {
+            break;
+        }
+    }
+
+    increasing || decreasing
+}
+
+
+// The difference between each level must be within the bounds of lower and upper
+fn difference_within_bounds(levels: &Vec<i32>, lower: i32, upper: i32) -> bool {
+    let mut differences: Vec<i32> = Vec::new();
+
+    for window in levels.windows(2) {
+        differences.push((window[1] - window[0]).abs());
+    }
+
+    differences.iter().all(|&x| x >= lower && x <= upper)
+}
+
+
+// Levels are considered safe if they are strictly monotonic and the difference between each level is within 1 and 3
+fn safe_levels(levels: &Vec<i32>) -> bool {
+    are_strictly_monotonic(levels) && difference_within_bounds(levels, 1, 3)
+}
+
+
 impl Report {
-    // Check if the levels are monotonic
-    fn is_strictly_monotonic(&self) -> bool {
-        let mut increasing: bool = true;
-        let mut decreasing: bool = true;
-
-        for window in self.levels.windows(2) {
-            match window[0].cmp(&window[1]) {
-                Ordering::Less => decreasing = false,
-                Ordering::Greater => increasing = false,
-                Ordering::Equal => {decreasing = false; increasing = false;}
-            }
-            if !increasing && !decreasing {
-                break;
-            }
-        }
-
-        increasing || decreasing
-    }
-
-    // Check if the difference between each level is within the bounds
-    fn difference_within_bounds(&self, lower: u32, upper: u32) -> bool {
-        let mut differences: Vec<u32> = Vec::new();
-
-        for window in self.levels.windows(2) {
-            differences.push((window[1] - window[0]).unsigned_abs());
-        }
-
-        differences.iter().all(|&x| x >= lower && x <= upper)
-    }
-
     // A report is safe if it is monotonic and the difference between each level is within 1 and 3
     fn is_safe(&self) -> bool {
-        self.is_strictly_monotonic() && self.difference_within_bounds(1, 3)
+        let mut safe: bool = safe_levels(&self.levels);
+        let mut levels: Vec<i32> = self.levels.clone();
+
+        if !safe {
+            for i in 0..self.levels.len() {
+                let level = levels[i];
+                levels.remove(i);
+                safe = safe_levels(&levels);
+                levels.insert(i, level);
+                if safe {
+                    break;
+                }
+            }
+        }
+
+        safe
     }
 }
 
+
 // Get the number of safe reports
 fn count_safe_reports(reports: Vec<Report>) -> usize {
-    reports.into_iter().filter(|r| r.is_safe()).count()
+    reports.into_iter().filter(|r: &Report| r.is_safe()).count()
 }
 
 // Read reports from the reports.txt file
