@@ -15,7 +15,7 @@ struct Report {
 
 impl Report {
     // Check if the levels are monotonic
-    fn is_monotonic(&self) -> bool {
+    fn is_strictly_monotonic(&self) -> bool {
         let mut increasing: bool = true;
         let mut decreasing: bool = true;
 
@@ -23,7 +23,10 @@ impl Report {
             match window[0].cmp(&window[1]) {
                 Ordering::Less => decreasing = false,
                 Ordering::Greater => increasing = false,
-                Ordering::Equal => {}
+                Ordering::Equal => {decreasing = false; increasing = false;}
+            }
+            if !increasing && !decreasing {
+                break;
             }
         }
 
@@ -43,7 +46,7 @@ impl Report {
 
     // A report is safe if it is monotonic and the difference between each level is within 1 and 3
     fn is_safe(&self) -> bool {
-        self.is_monotonic() && self.difference_within_bounds(1, 3)
+        self.is_strictly_monotonic() && self.difference_within_bounds(1, 3)
     }
 }
 
