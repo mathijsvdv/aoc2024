@@ -2,35 +2,35 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 fn main() {
-    let matrix = load_matrix();
-    let directions = get_directions(&matrix);
+    let word_search = load_word_search();
+    let directions = get_directions(&word_search);
     for direction in directions {
         println!("{}", direction);
     }
 }
 
-fn load_matrix() -> Vec<Vec<char>> {
+fn load_word_search() -> Vec<Vec<char>> {
     let file = File::open("word_search.txt").expect("File not found");
     let reader = BufReader::new(file);
 
-    let mut matrix = Vec::new();
+    let mut word_search = Vec::new();
     let mut max_cols = 0;
 
     for line in reader.lines() {
         let line = line.unwrap();
         let chars: Vec<char> = line.chars().collect();
         max_cols = max_cols.max(chars.len());
-        matrix.push(chars);
+        word_search.push(chars);
     }
 
-    matrix
+    word_search
 }
 
-fn get_directions(matrix: &Vec<Vec<char>>) -> Vec<String> {
-    let rows = get_rows(matrix);
-    let diagonals = get_diagonals(matrix);
+fn get_directions(word_search: &Vec<Vec<char>>) -> Vec<String> {
+    let rows = get_rows(word_search);
+    let diagonals = get_diagonals(word_search);
 
-    let transposed = transpose(matrix);
+    let transposed = transpose(word_search);
     let cols = get_rows(&transposed);
     let tdiagonals = get_diagonals(&transposed);
 
@@ -47,12 +47,12 @@ fn get_directions(matrix: &Vec<Vec<char>>) -> Vec<String> {
     directions
 }
 
-fn transpose(matrix: &Vec<Vec<char>>) -> Vec<Vec<char>> {
+fn transpose(word_search: &Vec<Vec<char>>) -> Vec<Vec<char>> {
     let mut transposed = Vec::new();
 
-    for col in 0..matrix[0].len() {
+    for col in 0..word_search[0].len() {
         let mut transposed_row = Vec::new();
-        for row in matrix {
+        for row in word_search {
             if col < row.len() {
                 transposed_row.push(row[col]);
             }
@@ -63,10 +63,10 @@ fn transpose(matrix: &Vec<Vec<char>>) -> Vec<Vec<char>> {
     transposed
 }
 
-fn get_rows(matrix: &Vec<Vec<char>>) -> Vec<String> {
+fn get_rows(word_search: &Vec<Vec<char>>) -> Vec<String> {
     let mut rows = Vec::new();
 
-    for row in matrix {
+    for row in word_search {
         let row_str: String = row.iter().collect();
         rows.push(row_str);
     }
@@ -74,18 +74,18 @@ fn get_rows(matrix: &Vec<Vec<char>>) -> Vec<String> {
     rows
 }
 
-fn get_diagonals(matrix: &Vec<Vec<char>>) -> Vec<String> {
+fn get_diagonals(word_search: &Vec<Vec<char>>) -> Vec<String> {
     let mut diagonals = Vec::new();
 
-    for row in 0..matrix.len() {
-        let diagonal = _get_diagonal(matrix, row, 0);
+    for row in 0..word_search.len() {
+        let diagonal = _get_diagonal(word_search, row, 0);
         if diagonal.len() > 1 {
             diagonals.push(diagonal);
         }
     }
 
-    for col in 1..matrix[0].len() {
-        let diagonal = _get_diagonal(matrix, 0, col);
+    for col in 1..word_search[0].len() {
+        let diagonal = _get_diagonal(word_search, 0, col);
         if diagonal.len() > 1 {
             diagonals.push(diagonal);
         }
@@ -94,14 +94,14 @@ fn get_diagonals(matrix: &Vec<Vec<char>>) -> Vec<String> {
     diagonals
 }
 
-fn _get_diagonal(matrix: &Vec<Vec<char>>, row: usize, col: usize) -> String {
+fn _get_diagonal(word_search: &Vec<Vec<char>>, row: usize, col: usize) -> String {
     let mut diagonal = String::new();
 
     let mut r = row;
     let mut c = col;
 
-    while r < matrix.len() && c < matrix[0].len() {
-        diagonal.push(matrix[r][c]);
+    while r < word_search.len() && c < word_search[0].len() {
+        diagonal.push(word_search[r][c]);
         r += 1;
         c += 1;
     }
