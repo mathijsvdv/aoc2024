@@ -79,16 +79,12 @@ fn get_diagonals(word_search: &Vec<Vec<char>>) -> Vec<String> {
 
     for row in 0..word_search.len() {
         let diagonal = _get_diagonal(word_search, row, 0);
-        if diagonal.len() > 1 {
-            diagonals.push(diagonal);
-        }
+        diagonals.push(diagonal);
     }
 
     for col in 1..word_search[0].len() {
         let diagonal = _get_diagonal(word_search, 0, col);
-        if diagonal.len() > 1 {
-            diagonals.push(diagonal);
-        }
+        diagonals.push(diagonal);
     }
 
     diagonals
