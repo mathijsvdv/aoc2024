@@ -1,6 +1,7 @@
 use std::{
     fs::File,
     io::{BufRead, BufReader},
+    collections::HashMap,
 };
 
 fn main() {
@@ -13,26 +14,9 @@ fn main() {
     let update: Vec<i8> = updates[updates.len() - 1].clone();
     let pairs = find_pairs(&update);
     println!("Pairs: {:?}", pairs);
-}
 
-// Find all pairs in a vector
-fn find_pairs<T: Clone>(vec: &Vec<T>) -> Vec<(T, T)> {
-    let mut pairs = Vec::new();
-    for i in 0..vec.len() {
-        for j in i + 1..vec.len() {
-            pairs.push((vec[i].clone(), vec[j].clone()));
-        }
-    }
-    pairs
-}
-
-// Translate an unordered pair to a key. The key is the same, regardless of the order of the pair
-fn _pair_to_key(pair: (i8, i8)) -> (i8, i8) {
-    if pair.0 < pair.1 {
-        return pair;
-    } else {
-        return (pair.1, pair.0);
-    }
+    let rule_map = page_ordering_rules_to_map(&rules);
+    println!("Rule map: {:?}", rule_map);
 }
 
 #[derive(Debug)]
@@ -69,4 +53,53 @@ fn read_page_updates(path: &str) -> Vec<Vec<i8>> {
     }
 
     updates
+}
+
+// Find all pairs in a vector
+fn find_pairs<T: Clone>(vec: &Vec<T>) -> Vec<(T, T)> {
+    let mut pairs = Vec::new();
+    for i in 0..vec.len() {
+        for j in i + 1..vec.len() {
+            pairs.push((vec[i].clone(), vec[j].clone()));
+        }
+    }
+    pairs
+}
+
+// Trait which translates an unordered pair to a key. The key is the same, regardless of the order of the pair
+trait PairToKey {
+    type Key;
+    fn to_key(&self) -> Self::Key;
+}
+
+// Implement the trait for (i8, i8)
+impl PairToKey for (i8, i8) {
+    type Key = (i8, i8);
+    fn to_key(&self) -> Self::Key {
+        if self.0 < self.1 {
+            *self
+        } else {
+            (self.1, self.0)
+        }
+    }
+}
+
+// Implement the trait for PageOrderingRule
+impl PairToKey for PageOrderingRule {
+    type Key = (i8, i8);
+    fn to_key(&self) -> Self::Key {
+        if self.before < self.after {
+            (self.before, self.after)
+        } else {
+            (self.after, self.before)
+        }
+    }
+}
+
+fn page_ordering_rules_to_map(rules: &Vec<PageOrderingRule>) -> HashMap<(i8, i8), &PageOrderingRule> {
+    let mut map: HashMap<(i8, i8), &PageOrderingRule> = std::collections::HashMap::new();
+    for rule in rules {
+        map.insert(rule.to_key(), rule);
+    }
+    map
 }
