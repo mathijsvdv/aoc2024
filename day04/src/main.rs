@@ -165,9 +165,9 @@ fn get_directions(word_search: &Vec<Vec<char>>) -> Vec<String> {
 
     let diagonals = get_diagonals(word_search);
     let rotated = rotate(word_search);
-    let antidiagonals = get_diagonals(&rotated);
+    // let antidiagonals = get_diagonals(&rotated);
 
-    let direction_vecs: [Vec<String>; 4] = [rows, cols, diagonals, antidiagonals];
+    let direction_vecs: [Vec<String>; 3] = [rows, cols, diagonals];
     let n_directions = direction_vecs.iter().map(|vec| vec.len()).sum();
     let mut directions = Vec::with_capacity(n_directions);
 
