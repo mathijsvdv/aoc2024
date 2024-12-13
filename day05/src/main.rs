@@ -1,7 +1,7 @@
 use std::{
+    collections::HashMap,
     fs::File,
     io::{BufRead, BufReader},
-    collections::HashMap,
 };
 
 fn main() {
@@ -13,17 +13,17 @@ fn main() {
 
     let rule_map: HashMap<(i8, i8), &PageOrderingRule> = page_ordering_rules_to_map(&rules);
 
-    for update in &updates {}
+    let correctly_ordered_updates: Vec<&Vec<i8>> = updates
+        .iter()
+        .filter(|update| is_correctly_ordered(update, &rule_map))
+        .collect();
+    println!("Correctly ordered updates: {:?}", correctly_ordered_updates);
 
-    let update: Vec<i8> = updates[updates.len() - 1].clone();
-    println!("Update: {:?}", update);
-
-    let middle_element = get_middle_element(&update);
-    println!("Middle element: {}", middle_element);
-
-    // let pairs = find_pairs(&update);
-    // println!("Pairs: {:?}", pairs);
-å
+    let answer: i32 = correctly_ordered_updates
+        .iter()
+        .map(|update| get_middle_element(update) as i32)
+        .sum::<i32>();
+    println!("Answer: {}", answer);
 }
 
 #[derive(Debug)]
@@ -73,7 +73,7 @@ fn find_pairs<T: Clone>(vec: &Vec<T>) -> Vec<(T, T)> {
     pairs
 }
 
-// Trait which allows an object to translate itself to an unordered key. 
+// Trait which allows an object to translate itself to an unordered key.
 // The key is the same, regardless of the order of the pair
 trait ToUnorderedKey {
     type Key;
@@ -104,7 +104,9 @@ impl ToUnorderedKey for PageOrderingRule {
     }
 }
 
-fn page_ordering_rules_to_map(rules: &Vec<PageOrderingRule>) -> HashMap<(i8, i8), &PageOrderingRule> {
+fn page_ordering_rules_to_map(
+    rules: &Vec<PageOrderingRule>,
+) -> HashMap<(i8, i8), &PageOrderingRule> {
     let mut map: HashMap<(i8, i8), &PageOrderingRule> = std::collections::HashMap::new();
     for rule in rules {
         map.insert(rule.to_unordered_key(), rule);
@@ -112,7 +114,10 @@ fn page_ordering_rules_to_map(rules: &Vec<PageOrderingRule>) -> HashMap<(i8, i8)
     map
 }
 
-fn find_applicable_rules<'a>(pairs: &Vec<(i8, i8)>, rule_map: &HashMap<(i8, i8), &'a PageOrderingRule>) -> Vec<&'a PageOrderingRule> {
+fn find_applicable_rules<'a>(
+    pairs: &Vec<(i8, i8)>,
+    rule_map: &HashMap<(i8, i8), &'a PageOrderingRule>,
+) -> Vec<&'a PageOrderingRule> {
     let mut applicable_rules = Vec::new();
     for pair in pairs {
         if let Some(rule) = rule_map.get(&pair.to_unordered_key()) {
@@ -149,7 +154,6 @@ impl PageOrderingRule {
         before_index < after_index
     }
 }
-
 
 fn get_middle_element(vec: &Vec<i8>) -> i8 {
     vec[vec.len() / 2]
