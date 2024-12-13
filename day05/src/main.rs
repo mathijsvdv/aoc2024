@@ -11,13 +11,13 @@ fn main() {
 
     let rule_map: HashMap<(i8, i8), &PageOrderingRule> = page_ordering_rules_to_map(&rules);
 
-    let correctly_ordered_updates: Vec<&Vec<i8>> = updates
+    let correctly_ordered_updates: Vec<_> = updates
         .iter()
         .filter(|update| is_correctly_ordered(update, &rule_map))
         .collect();
     println!("Correctly ordered updates: {:?}", correctly_ordered_updates);
 
-    let answer: i32 = correctly_ordered_updates
+    let answer = correctly_ordered_updates
         .iter()
         .map(|update| get_middle_element(update) as i32)
         .sum::<i32>();
