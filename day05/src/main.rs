@@ -1,8 +1,6 @@
-use std::{
-    collections::HashMap,
-    fs::File,
-    io::{BufRead, BufReader},
-};
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 fn main() {
     let rules = read_page_ordering_rules("page_ordering_rules.txt");
