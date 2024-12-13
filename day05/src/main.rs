@@ -16,7 +16,8 @@ fn main() {
     println!("Pairs: {:?}", pairs);
 
     let rule_map = page_ordering_rules_to_map(&rules);
-    println!("Rule map: {:?}", rule_map);
+    let applicable_rules = find_applicable_rules(&pairs, &rule_map);
+    println!("Applicable rules: {:?}", applicable_rules);
 }
 
 #[derive(Debug)]
@@ -103,4 +104,20 @@ fn page_ordering_rules_to_map(rules: &Vec<PageOrderingRule>) -> HashMap<(i8, i8)
         map.insert(rule.to_unordered_key(), rule);
     }
     map
+}
+
+fn find_applicable_rules<'a>(pairs: &Vec<(i8, i8)>, rule_map: &HashMap<(i8, i8), &'a PageOrderingRule>) -> Vec<&'a PageOrderingRule> {
+    let mut applicable_rules = Vec::new();
+    for pair in pairs {
+        if let Some(rule) = rule_map.get(&pair.to_unordered_key()) {
+            applicable_rules.push(*rule);
+        }
+    }
+    applicable_rules
+}
+
+fn get_middle_element(vec: &Vec<i8>) -> i8 {
+    let mut vec = vec.clone();
+    vec.sort();
+    vec[vec.len() / 2]
 }
