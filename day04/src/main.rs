@@ -121,8 +121,11 @@ fn _get_n_matches_in_direction(direction: &str, word: &str) -> usize {
 
     // The matches mapped to the last character represent full words that we've found
     // So we sum the number of matches for each of these
-    let last_matches: &Vec<Match> = &matches[&word[word.len() - 1]];
-    last_matches.iter().map(|m| m.get_n_matches()).sum()
+    if let Some(last_matches) = matches.get(&word[word.len() - 1]) {
+        last_matches.iter().map(|m| m.get_n_matches()).sum()
+    } else {
+        0
+    }
 }
 
 
