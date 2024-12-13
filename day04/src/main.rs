@@ -4,15 +4,21 @@ use std::io::{BufRead, BufReader};
 
 fn main() {
     let word_search = load_word_search();
-    let n_matches_per_direction = get_n_matches_per_direction(&word_search, "XMAS");
+    let word = "XMAS";
 
+    // Print the number of matches in a specific direction
+    let direction = "MXMXAXMASX";
+    let n_matches = _get_n_matches_in_direction(direction, word);
+    println!("Matches in direction '{}': {}", direction, n_matches);
+
+    let n_matches_per_direction = get_n_matches_per_direction(&word_search, word);
     // Print the number of matches per direction
     for (direction, n_matches) in n_matches_per_direction.iter() {
         println!("{}: {}", direction, n_matches);
     }
 
     // Print the total number of matches
-    let n_matches = get_n_matches(&word_search, "XMAS");
+    let n_matches = get_n_matches(&word_search, word);
     println!("Total matches: {}", n_matches);
 }
 
@@ -65,6 +71,8 @@ fn _update_matches(
     word: &str,
     char: char,
 ) {
+    // println!("Current character: {}", char);
+
     let &i = char_to_index.get(&char).expect("Character is not in word");
     let subword = char_to_subword
         .get(&char)
@@ -74,6 +82,7 @@ fn _update_matches(
         *n_matches_per_subword
             .entry(subword.to_string())
             .or_insert(0) += 1;
+        // println!("Matches per subword after character: {:?}", n_matches_per_subword);
         return;
     }
 
@@ -88,6 +97,9 @@ fn _update_matches(
     *n_matches_per_subword
         .entry(subword.to_string())
         .or_insert(0) += n_matches;
+
+    // println!("Matches per subword after character: {:?}", n_matches_per_subword);
+
     return;
 }
 
@@ -148,13 +160,14 @@ fn _get_n_matches_in_direction(direction: &str, word: &str) -> usize {
 
 fn get_directions(word_search: &Vec<Vec<char>>) -> Vec<String> {
     let rows = get_rows(word_search);
-    let diagonals = get_diagonals(word_search);
-
     let transposed = transpose(word_search);
     let cols = get_rows(&transposed);
-    let tdiagonals = get_diagonals(&transposed);
 
-    let direction_vecs: [Vec<String>; 4] = [rows, cols, diagonals, tdiagonals];
+    let diagonals = get_diagonals(word_search);
+    let rotated = rotate(word_search);
+    let antidiagonals = get_diagonals(&rotated);
+
+    let direction_vecs: [Vec<String>; 4] = [rows, cols, diagonals, antidiagonals];
     let n_directions = direction_vecs.iter().map(|vec| vec.len()).sum();
     let mut directions = Vec::with_capacity(n_directions);
 
@@ -165,6 +178,22 @@ fn get_directions(word_search: &Vec<Vec<char>>) -> Vec<String> {
     }
 
     directions
+}
+
+
+// Rotates the word search by 90 degrees
+fn rotate(word_search: &Vec<Vec<char>>) -> Vec<Vec<char>> {
+    let mut rotated = Vec::new();
+
+    for col in 0..word_search[0].len() {
+        let mut rotated_row = Vec::new();
+        for row in word_search.iter().rev() {
+            rotated_row.push(row[col]);
+        }
+        rotated.push(rotated_row);
+    }
+
+    rotated
 }
 
 fn transpose(word_search: &Vec<Vec<char>>) -> Vec<Vec<char>> {
