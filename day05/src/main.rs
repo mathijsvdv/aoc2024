@@ -66,16 +66,17 @@ fn find_pairs<T: Clone>(vec: &Vec<T>) -> Vec<(T, T)> {
     pairs
 }
 
-// Trait which translates an unordered pair to a key. The key is the same, regardless of the order of the pair
-trait PairToKey {
+// Trait which allows an object to translate itself to an unordered key. 
+// The key is the same, regardless of the order of the pair
+trait ToUnorderedKey {
     type Key;
-    fn to_key(&self) -> Self::Key;
+    fn to_unordered_key(&self) -> Self::Key;
 }
 
 // Implement the trait for (i8, i8)
-impl PairToKey for (i8, i8) {
+impl ToUnorderedKey for (i8, i8) {
     type Key = (i8, i8);
-    fn to_key(&self) -> Self::Key {
+    fn to_unordered_key(&self) -> Self::Key {
         if self.0 < self.1 {
             *self
         } else {
@@ -85,9 +86,9 @@ impl PairToKey for (i8, i8) {
 }
 
 // Implement the trait for PageOrderingRule
-impl PairToKey for PageOrderingRule {
+impl ToUnorderedKey for PageOrderingRule {
     type Key = (i8, i8);
-    fn to_key(&self) -> Self::Key {
+    fn to_unordered_key(&self) -> Self::Key {
         if self.before < self.after {
             (self.before, self.after)
         } else {
@@ -99,7 +100,7 @@ impl PairToKey for PageOrderingRule {
 fn page_ordering_rules_to_map(rules: &Vec<PageOrderingRule>) -> HashMap<(i8, i8), &PageOrderingRule> {
     let mut map: HashMap<(i8, i8), &PageOrderingRule> = std::collections::HashMap::new();
     for rule in rules {
-        map.insert(rule.to_key(), rule);
+        map.insert(rule.to_unordered_key(), rule);
     }
     map
 }
