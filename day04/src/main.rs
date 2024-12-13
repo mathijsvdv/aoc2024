@@ -1,6 +1,6 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::collections::HashMap;
 
 fn main() {
     let word_search = load_word_search();
@@ -33,7 +33,6 @@ fn load_word_search() -> Vec<Vec<char>> {
     word_search
 }
 
-
 fn get_n_matches(word_search: &Vec<Vec<char>>, word: &str) -> usize {
     let directions = get_directions(word_search);
     let mut n_matches: usize = 0;
@@ -45,99 +44,107 @@ fn get_n_matches(word_search: &Vec<Vec<char>>, word: &str) -> usize {
     n_matches
 }
 
-
 fn get_n_matches_per_direction(word_search: &Vec<Vec<char>>, word: &str) -> HashMap<String, usize> {
     let directions = get_directions(word_search);
     let mut n_matches_per_direction: HashMap<String, usize> = HashMap::new();
 
     for direction in directions.iter() {
-        n_matches_per_direction.insert(direction.to_string(), _get_n_matches_in_direction(direction, word));
+        n_matches_per_direction.insert(
+            direction.to_string(),
+            _get_n_matches_in_direction(direction, word),
+        );
     }
 
     n_matches_per_direction
 }
 
-
-#[derive(Debug, Clone)]
-struct Match {
-    n_matches_per_char: Vec<usize>,
-}
-
-impl Match {
-    fn get_n_matches(&self) -> usize {
-        self.n_matches_per_char.iter().product()
-    }
-}
-
-
 fn _update_matches(
-    matches: &mut HashMap<char, Vec<Match>>,
+    n_matches_per_subword: &mut HashMap<String, usize>,
     char_to_index: &HashMap<char, usize>,
-    word: &[char],
+    char_to_subword: &HashMap<char, String>,
+    word: &str,
     char: char,
 ) {
     let &i = char_to_index.get(&char).expect("Character is not in word");
-
-    if let Some(match_vec) = matches.get_mut(&char) {
-        for m in match_vec.iter_mut() {
-            m.n_matches_per_char[i] += 1;
-        }
-    }
+    let subword = char_to_subword
+        .get(&char)
+        .expect("Character is not in word");
 
     if i == 0 {
-        matches.entry(char).or_insert_with(Vec::new).push(Match { n_matches_per_char: vec![1] });
+        *n_matches_per_subword
+            .entry(subword.to_string())
+            .or_insert(0) += 1;
         return;
     }
 
-    let prev_char = word[i - 1];
-    if let Some(prev_matches) = matches.get(&prev_char) {
-        let prev_matches: Vec<Match> = prev_matches.iter().cloned().collect();
-        for m in prev_matches {
-            let mut new_match = m.clone();
-            new_match.n_matches_per_char.push(1);
-            matches.entry(char).or_insert_with(Vec::new).push(new_match);
-        }
-    }
+    let prev_char = word
+        .chars()
+        .nth(i - 1)
+        .expect("Character index out of bounds");
+    let n_matches = n_matches_per_subword
+        .get(&char_to_subword[&prev_char])
+        .cloned()
+        .unwrap_or(0);
+    *n_matches_per_subword
+        .entry(subword.to_string())
+        .or_insert(0) += n_matches;
+    return;
 }
-
 
 fn _get_n_matches_in_direction(direction: &str, word: &str) -> usize {
     // TODO Still too many matches, check for example this string: "MASAMXXAM"
     // Should match twice, but matches 3 times
-    let word: Vec<char> = word.chars().collect();
-
-    let mut matches: HashMap<char, Vec<Match>> = HashMap::new();
 
     let mut char_to_index: HashMap<char, usize> = HashMap::new();
-    for (i, char) in word.iter().enumerate() {
-        char_to_index.insert(*char, i);
+    for (i, char) in word.chars().enumerate() {
+        char_to_index.insert(char, i);
+    }
+
+    let mut char_to_subword: HashMap<char, String> = HashMap::new();
+    let mut subword = String::new();
+    for char in word.chars() {
+        subword.push(char);
+        char_to_subword.insert(char, subword.clone());
     }
 
     let mut n_matches: usize = 0;
+
+    let mut n_matches_per_subword: HashMap<String, usize> = HashMap::new();
     for char in direction.chars() {
-        _update_matches(&mut matches, &char_to_index, &word, char);
+        _update_matches(
+            &mut n_matches_per_subword,
+            &char_to_index,
+            &char_to_subword,
+            &word,
+            char,
+        );
     }
 
     // The matches mapped to the last character represent full words that we've found
     // So we sum the number of matches for each of these
-    if let Some(last_matches) = matches.get(&word[word.len() - 1]) {
-        n_matches += last_matches.iter().map(|m| m.get_n_matches()).sum::<usize>();
+    if let Some(n_matches_of_full_word) = n_matches_per_subword.get(word) {
+        n_matches += n_matches_of_full_word;
     }
 
-    let mut matches: HashMap<char, Vec<Match>> = HashMap::new();
-
+    let mut n_matches_per_subword: HashMap<String, usize> = HashMap::new();
     for char in direction.chars().rev() {
-        _update_matches(&mut matches, &char_to_index, &word, char);
+        _update_matches(
+            &mut n_matches_per_subword,
+            &char_to_index,
+            &char_to_subword,
+            &word,
+            char,
+        );
     }
 
     // The matches mapped to the last character represent full words that we've found
     // So we sum the number of matches for each of these
-    if let Some(last_matches) = matches.get(&word[word.len() - 1]) {
-        n_matches += last_matches.iter().map(|m| m.get_n_matches()).sum::<usize>();
+    if let Some(n_matches_of_full_word) = n_matches_per_subword.get(word) {
+        n_matches += n_matches_of_full_word;
     }
+
     n_matches
 }
-
 
 fn get_directions(word_search: &Vec<Vec<char>>) -> Vec<String> {
     let rows = get_rows(word_search);
