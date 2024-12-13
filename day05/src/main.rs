@@ -36,7 +36,13 @@ fn read_page_ordering_rules(path: &str) -> Vec<PageOrderingRule> {
     let reader = BufReader::new(file);
     let mut rules = Vec::new();
     for line in reader.lines() {
-        let line = line.unwrap();
+        let line = match line {
+            Ok(line) => line,
+            Err(e) => {
+                eprintln!("Error reading line: {}", e);
+                continue;
+            }
+        };
         let parts: Vec<&str> = line.split('|').collect();
         let before: i8 = parts[0].parse().unwrap();
         let after: i8 = parts[1].parse().unwrap();
@@ -51,7 +57,13 @@ fn read_page_updates(path: &str) -> Vec<Vec<i8>> {
     let reader = BufReader::new(file);
     let mut updates = Vec::new();
     for line in reader.lines() {
-        let line = line.unwrap();
+        let line = match line {
+            Ok(line) => line,
+            Err(e) => {
+                eprintln!("Error reading line: {}", e);
+                continue;
+            }
+        };
         let update: Vec<&str> = line.split(',').collect();
         let update: Vec<i8> = update.iter().map(|s| s.parse().unwrap()).collect();
         updates.push(update);
