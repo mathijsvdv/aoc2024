@@ -10,10 +10,14 @@ fn main() {
     for (direction, n_matches) in n_matches_per_direction.iter() {
         println!("{}: {}", direction, n_matches);
     }
+
+    // Print the total number of matches
+    let n_matches = get_n_matches(&word_search, "XMAS");
+    println!("Total matches: {}", n_matches);
 }
 
 fn load_word_search() -> Vec<Vec<char>> {
-    let file = File::open("word_search.txt").expect("File not found");
+    let file = File::open("word_search_small.txt").expect("File not found");
     let reader = BufReader::new(file);
 
     let mut word_search = Vec::new();
@@ -27,6 +31,18 @@ fn load_word_search() -> Vec<Vec<char>> {
     }
 
     word_search
+}
+
+
+fn get_n_matches(word_search: &Vec<Vec<char>>, word: &str) -> usize {
+    let directions = get_directions(word_search);
+    let mut n_matches: usize = 0;
+
+    for direction in directions.iter() {
+        n_matches += _get_n_matches_in_direction(direction, word);
+    }
+
+    n_matches
 }
 
 
