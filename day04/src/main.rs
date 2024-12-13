@@ -111,9 +111,18 @@ fn _get_n_matches_in_direction(direction: &str, word: &str) -> usize {
         char_to_index.insert(*char, i);
     }
 
+    let mut n_matches: usize = 0;
     for char in direction.chars() {
         _update_matches(&mut matches, &char_to_index, &word, char);
     }
+
+    // The matches mapped to the last character represent full words that we've found
+    // So we sum the number of matches for each of these
+    if let Some(last_matches) = matches.get(&word[word.len() - 1]) {
+        n_matches += last_matches.iter().map(|m| m.get_n_matches()).sum::<usize>();
+    }
+
+    let mut matches: HashMap<char, Vec<Match>> = HashMap::new();
 
     for char in direction.chars().rev() {
         _update_matches(&mut matches, &char_to_index, &word, char);
@@ -122,10 +131,9 @@ fn _get_n_matches_in_direction(direction: &str, word: &str) -> usize {
     // The matches mapped to the last character represent full words that we've found
     // So we sum the number of matches for each of these
     if let Some(last_matches) = matches.get(&word[word.len() - 1]) {
-        last_matches.iter().map(|m| m.get_n_matches()).sum()
-    } else {
-        0
+        n_matches += last_matches.iter().map(|m| m.get_n_matches()).sum::<usize>();
     }
+    n_matches
 }
 
 
