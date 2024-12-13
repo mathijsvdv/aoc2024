@@ -62,8 +62,10 @@ fn _update_matches(
 ) {
     let &i = char_to_index.get(&char).expect("Character is not in word");
 
-    for m in matches.get_mut(&char).unwrap().iter_mut() {
-        m.n_matches_per_char[i] += 1;
+    if let Some(match_vec) = matches.get_mut(&char) {
+        for m in match_vec.iter_mut() {
+            m.n_matches_per_char[i] += 1;
+        }
     }
 
     if i == 0 {
@@ -72,12 +74,13 @@ fn _update_matches(
     }
 
     let prev_char = word[i - 1];
-
-    let prev_matches: Vec<Match> = matches.get(&prev_char).unwrap().iter().cloned().collect();
-    for m in prev_matches {
-        let mut new_match = m.clone();
-        new_match.n_matches_per_char.push(1);
-        matches.entry(char).or_insert_with(Vec::new).push(new_match);
+    if let Some(prev_matches) = matches.get(&prev_char) {
+        let prev_matches: Vec<Match> = prev_matches.iter().cloned().collect();
+        for m in prev_matches {
+            let mut new_match = m.clone();
+            new_match.n_matches_per_char.push(1);
+            matches.entry(char).or_insert_with(Vec::new).push(new_match);
+        }
     }
 }
 
