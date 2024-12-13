@@ -11,13 +11,19 @@ fn main() {
     let updates = read_page_updates("page_updates.txt");
     println!("Page updates: {:?}", updates);
 
-    let update: Vec<i8> = updates[updates.len() - 1].clone();
-    let pairs = find_pairs(&update);
-    println!("Pairs: {:?}", pairs);
+    let rule_map: HashMap<(i8, i8), &PageOrderingRule> = page_ordering_rules_to_map(&rules);
 
-    let rule_map = page_ordering_rules_to_map(&rules);
-    let applicable_rules = find_applicable_rules(&pairs, &rule_map);
-    println!("Applicable rules: {:?}", applicable_rules);
+    for update in &updates {}
+
+    let update: Vec<i8> = updates[updates.len() - 1].clone();
+    println!("Update: {:?}", update);
+
+    let middle_element = get_middle_element(&update);
+    println!("Middle element: {}", middle_element);
+
+    // let pairs = find_pairs(&update);
+    // println!("Pairs: {:?}", pairs);
+å
 }
 
 #[derive(Debug)]
@@ -116,8 +122,35 @@ fn find_applicable_rules<'a>(pairs: &Vec<(i8, i8)>, rule_map: &HashMap<(i8, i8),
     applicable_rules
 }
 
+fn is_correctly_ordered(update: &Vec<i8>, rule_map: &HashMap<(i8, i8), &PageOrderingRule>) -> bool {
+    let pairs = find_pairs(update);
+    let applicable_rules = find_applicable_rules(&pairs, rule_map);
+    let positions = pages_to_positions(update);
+    for rule in applicable_rules {
+        if !rule.satisfied(&positions) {
+            return false;
+        }
+    }
+    true
+}
+
+fn pages_to_positions(update: &Vec<i8>) -> HashMap<i8, usize> {
+    let mut map: HashMap<i8, usize> = std::collections::HashMap::new();
+    for (i, page) in update.iter().enumerate() {
+        map.insert(*page, i);
+    }
+    map
+}
+
+impl PageOrderingRule {
+    fn satisfied(&self, positions: &HashMap<i8, usize>) -> bool {
+        let before_index = positions.get(&self.before).unwrap();
+        let after_index = positions.get(&self.after).unwrap();
+        before_index < after_index
+    }
+}
+
+
 fn get_middle_element(vec: &Vec<i8>) -> i8 {
-    let mut vec = vec.clone();
-    vec.sort();
     vec[vec.len() / 2]
 }
