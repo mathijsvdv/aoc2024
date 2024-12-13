@@ -1,7 +1,6 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::collections::HashMap;
-use regex::Regex;
 
 fn main() {
     let word_search = load_word_search();
@@ -43,32 +42,68 @@ fn get_n_matches_per_direction(word_search: &Vec<Vec<char>>, word: &str) -> Hash
 }
 
 
-fn _get_n_matches_in_direction(direction: &str, word: &str) -> usize {
-    let mut n_matches = 0;
-    let chars: Vec<String> = word.chars().map(|c| c.to_string()).collect();
-    let regex_string = chars.join(".*");
-    let regex = Regex::new(&regex_string).unwrap();
+#[derive(Debug, Clone)]
+struct Match {
+    n_matches_per_char: Vec<usize>,
+}
 
-    for _ in regex.captures_iter(&direction) {
-        n_matches += 1;
+impl Match {
+    fn get_n_matches(&self) -> usize {
+        self.n_matches_per_char.iter().product()
     }
-
-    for _ in regex.captures_iter(&reverse_direction(&direction)) {
-        n_matches += 1;
-    }
-
-    n_matches
 }
 
 
-fn reverse_direction(directions: &str) -> String {
-    let mut reversed = String::new();
+fn _update_matches(
+    matches: &mut HashMap<char, Vec<Match>>,
+    char_to_index: &HashMap<char, usize>,
+    word: &[char],
+    char: char,
+) {
+    let &i = char_to_index.get(&char).expect("Character is not in word");
 
-    for c in directions.chars().rev() {
-        reversed.push(c);
+    for m in matches.get_mut(&char).unwrap().iter_mut() {
+        m.n_matches_per_char[i] += 1;
     }
 
-    reversed
+    if i == 0 {
+        matches.entry(char).or_insert_with(Vec::new).push(Match { n_matches_per_char: vec![1] });
+        return;
+    }
+
+    let prev_char = word[i - 1];
+
+    let prev_matches: Vec<Match> = matches.get(&prev_char).unwrap().iter().cloned().collect();
+    for m in prev_matches {
+        let mut new_match = m.clone();
+        new_match.n_matches_per_char.push(1);
+        matches.entry(char).or_insert_with(Vec::new).push(new_match);
+    }
+}
+
+
+fn _get_n_matches_in_direction(direction: &str, word: &str) -> usize {
+    let word: Vec<char> = word.chars().collect();
+
+    let mut matches: HashMap<char, Vec<Match>> = HashMap::new();
+
+    let mut char_to_index: HashMap<char, usize> = HashMap::new();
+    for (i, char) in word.iter().enumerate() {
+        char_to_index.insert(*char, i);
+    }
+
+    for char in direction.chars() {
+        _update_matches(&mut matches, &char_to_index, &word, char);
+    }
+
+    for char in direction.chars().rev() {
+        _update_matches(&mut matches, &char_to_index, &word, char);
+    }
+
+    // The matches mapped to the last character represent full words that we've found
+    // So we sum the number of matches for each of these
+    let last_matches: &Vec<Match> = &matches[&word[word.len() - 1]];
+    last_matches.iter().map(|m| m.get_n_matches()).sum()
 }
 
 
