@@ -73,7 +73,7 @@ fn read_page_updates(path: &str) -> Vec<Vec<i8>> {
 }
 
 // Find all pairs in a vector
-fn find_pairs<T: Clone>(vec: &Vec<T>) -> Vec<(T, T)> {
+fn find_pairs<T: Clone>(vec: &[T]) -> Vec<(T, T)> {
     let mut pairs = Vec::new();
     for i in 0..vec.len() {
         for j in i + 1..vec.len() {
@@ -115,7 +115,7 @@ impl ToUnorderedKey for PageOrderingRule {
 }
 
 fn page_ordering_rules_to_map(
-    rules: &Vec<PageOrderingRule>,
+    rules: &[PageOrderingRule],
 ) -> HashMap<(i8, i8), &PageOrderingRule> {
     let mut map: HashMap<(i8, i8), &PageOrderingRule> = std::collections::HashMap::new();
     for rule in rules {
@@ -125,7 +125,7 @@ fn page_ordering_rules_to_map(
 }
 
 fn find_applicable_rules<'a>(
-    pairs: &Vec<(i8, i8)>,
+    pairs: &[(i8, i8)],
     rule_map: &HashMap<(i8, i8), &'a PageOrderingRule>,
 ) -> Vec<&'a PageOrderingRule> {
     let mut applicable_rules = Vec::new();
@@ -137,7 +137,7 @@ fn find_applicable_rules<'a>(
     applicable_rules
 }
 
-fn is_correctly_ordered(update: &Vec<i8>, rule_map: &HashMap<(i8, i8), &PageOrderingRule>) -> bool {
+fn is_correctly_ordered(update: &[i8], rule_map: &HashMap<(i8, i8), &PageOrderingRule>) -> bool {
     let pairs = find_pairs(update);
     let applicable_rules = find_applicable_rules(&pairs, rule_map);
     let positions = pages_to_positions(update);
@@ -149,7 +149,7 @@ fn is_correctly_ordered(update: &Vec<i8>, rule_map: &HashMap<(i8, i8), &PageOrde
     true
 }
 
-fn pages_to_positions(update: &Vec<i8>) -> HashMap<i8, usize> {
+fn pages_to_positions(update: &[i8]) -> HashMap<i8, usize> {
     let mut map: HashMap<i8, usize> = std::collections::HashMap::new();
     for (i, page) in update.iter().enumerate() {
         map.insert(*page, i);
@@ -165,6 +165,6 @@ impl PageOrderingRule {
     }
 }
 
-fn get_middle_element(vec: &Vec<i8>) -> i8 {
+fn get_middle_element(vec: &[i8]) -> i8 {
     vec[vec.len() / 2]
 }
