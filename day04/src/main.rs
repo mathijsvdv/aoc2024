@@ -102,6 +102,8 @@ fn _update_matches(
 
 
 fn _get_n_matches_in_direction(direction: &str, word: &str) -> usize {
+    // TODO Still too many matches, check for example this string: "MASAMXXAM"
+    // Should match twice, but matches 3 times
     let word: Vec<char> = word.chars().collect();
 
     let mut matches: HashMap<char, Vec<Match>> = HashMap::new();
