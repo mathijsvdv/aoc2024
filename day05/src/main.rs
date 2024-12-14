@@ -17,10 +17,7 @@ fn main() {
         .collect();
     println!("Correctly ordered updates: {:?}", correctly_ordered_updates);
 
-    let answer_1 = correctly_ordered_updates
-        .iter()
-        .map(|update| update.get_middle_page() as i32)
-        .sum::<i32>();
+    let answer_1 = sum_middle_pages(&correctly_ordered_updates);
     println!("Answer 1: {}", answer_1);
 
     let mut incorrectly_ordered_updates: Vec<_> = updates
@@ -32,10 +29,8 @@ fn main() {
         update.order(&rule_map);
     }
 
-    let answer_2 = incorrectly_ordered_updates
-        .iter()
-        .map(|update| update.get_middle_page() as i32)
-        .sum::<i32>();
+    let incorrectly_ordered_updates: Vec<&PageUpdate> = incorrectly_ordered_updates.iter_mut().map(|update| &**update).collect();
+    let answer_2 = sum_middle_pages(&incorrectly_ordered_updates);
     println!("Answer 2: {}", answer_2);
 
 }
@@ -86,6 +81,12 @@ impl PageUpdate {
 
 fn get_middle_element(vec: &[i8]) -> i8 {
     vec[vec.len() / 2]
+}
+
+
+// Sum the middle pages of a vector of PageUpdates
+fn sum_middle_pages(updates: &[&PageUpdate]) -> i32 {
+    updates.iter().map(|update| update.get_middle_page() as i32).sum()
 }
 
 
