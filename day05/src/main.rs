@@ -6,7 +6,7 @@ fn main() {
     let rules = read_page_ordering_rules("page_ordering_rules.txt");
     println!("Page ordering rules: {:?}", rules);
 
-    let updates = read_page_updates("page_updates.txt");
+    let mut updates = read_page_updates("page_updates.txt");
     println!("Page updates: {:?}", updates);
 
     let rule_map: HashMap<(i8, i8), &PageOrderingRule> = page_ordering_rules_to_map(&rules);
@@ -17,11 +17,27 @@ fn main() {
         .collect();
     println!("Correctly ordered updates: {:?}", correctly_ordered_updates);
 
-    let answer = correctly_ordered_updates
+    let answer_1 = correctly_ordered_updates
         .iter()
         .map(|update| update.get_middle_page() as i32)
         .sum::<i32>();
-    println!("Answer: {}", answer);
+    println!("Answer 1: {}", answer_1);
+
+    let mut incorrectly_ordered_updates: Vec<_> = updates
+        .iter_mut()
+        .filter(|update| !update.is_correctly_ordered(&rule_map))
+        .collect();
+
+    for update in &mut incorrectly_ordered_updates {
+        update.order(&rule_map);
+    }
+
+    let answer_2 = incorrectly_ordered_updates
+        .iter()
+        .map(|update| update.get_middle_page() as i32)
+        .sum::<i32>();
+    println!("Answer 2: {}", answer_2);
+
 }
 
 #[derive(Debug)]
@@ -47,11 +63,19 @@ impl PageUpdate {
         let pairs = find_pairs(&self.pages);
         let applicable_rules = find_applicable_rules(&pairs, rule_map);
         for rule in applicable_rules {
-            if !rule.satisfied(&self.positions) {
+            if !rule.satisfied(&self) {
                 return false;
             }
         }
         true
+    }
+
+    fn order(&mut self, rule_map: &HashMap<(i8, i8), &PageOrderingRule>) {
+        let pairs = find_pairs(&self.pages);
+        let applicable_rules = find_applicable_rules(&pairs, rule_map);
+        for rule in applicable_rules {
+            rule.apply(self);
+        }
     }
 
     fn get_middle_page(&self) -> i8 {
@@ -182,17 +206,20 @@ fn pages_to_positions(pages: &[i8]) -> HashMap<i8, usize> {
 }
 
 impl PageOrderingRule {
-    fn satisfied(&self, positions: &HashMap<i8, usize>) -> bool {
-        let before_index = positions.get(&self.before).unwrap();
-        let after_index = positions.get(&self.after).unwrap();
+    fn satisfied(&self, update: &PageUpdate) -> bool {
+        let before_index = update.positions.get(&self.before).unwrap();
+        let after_index = update.positions.get(&self.after).unwrap();
         before_index < after_index
     }
 
-
-
-    fn apply(&self, update: &mut Vec<i8>) {
-        let before_index = update.iter().position(|&x| x == self.before).unwrap();
-        let after_index = update.iter().position(|&x| x == self.after).unwrap();
-        update.swap(before_index, after_index);
+    fn apply(&self, update: &mut PageUpdate) {
+        if self.satisfied(update) {
+            return;
+        }
+        let before_index = *update.positions.get(&self.before).unwrap();
+        let after_index = *update.positions.get(&self.after).unwrap();
+        update.pages.swap(before_index, after_index);
+        update.positions.insert(self.before, after_index);
+        update.positions.insert(self.after, before_index);
     }
 }
