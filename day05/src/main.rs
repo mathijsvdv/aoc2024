@@ -13,13 +13,13 @@ fn main() {
 
     let correctly_ordered_updates: Vec<_> = updates
         .iter()
-        .filter(|update| is_correctly_ordered(update, &rule_map))
+        .filter(|update| update.is_correctly_ordered(&rule_map))
         .collect();
     println!("Correctly ordered updates: {:?}", correctly_ordered_updates);
 
     let answer = correctly_ordered_updates
         .iter()
-        .map(|update| get_middle_element(update) as i32)
+        .map(|update| update.get_middle_page() as i32)
         .sum::<i32>();
     println!("Answer: {}", answer);
 }
@@ -29,6 +29,36 @@ struct PageOrderingRule {
     before: i8,
     after: i8,
 }
+
+// Struct to represent a page update and the positions of the pages
+#[derive(Debug)]
+struct PageUpdate {
+    pages: Vec<i8>,
+    positions: HashMap<i8, usize>,
+}
+
+impl PageUpdate {
+    fn new(pages: Vec<i8>) -> Self {
+        let positions = pages_to_positions(&pages);
+        PageUpdate { pages, positions }
+    }
+
+    fn is_correctly_ordered(&self, rule_map: &HashMap<(i8, i8), &PageOrderingRule>) -> bool {
+        let pairs = find_pairs(&self.pages);
+        let applicable_rules = find_applicable_rules(&pairs, rule_map);
+        for rule in applicable_rules {
+            if !rule.satisfied(&self.positions) {
+                return false;
+            }
+        }
+        true
+    }
+
+    fn get_middle_page(&self) -> i8 {
+        get_middle_element(&self.pages)
+    }
+}
+
 
 // Read the page ordering rules from a file
 fn read_page_ordering_rules(path: &str) -> Vec<PageOrderingRule> {
@@ -52,7 +82,7 @@ fn read_page_ordering_rules(path: &str) -> Vec<PageOrderingRule> {
 }
 
 // Read the page updates from a file
-fn read_page_updates(path: &str) -> Vec<Vec<i8>> {
+fn read_page_updates(path: &str) -> Vec<PageUpdate> {
     let file = File::open(path).expect("File not found");
     let reader = BufReader::new(file);
     let mut updates = Vec::new();
@@ -66,6 +96,7 @@ fn read_page_updates(path: &str) -> Vec<Vec<i8>> {
         };
         let update: Vec<&str> = line.split(',').collect();
         let update: Vec<i8> = update.iter().map(|s| s.parse().unwrap()).collect();
+        let update: PageUpdate = PageUpdate::new(update);
         updates.push(update);
     }
 
@@ -137,21 +168,9 @@ fn find_applicable_rules<'a>(
     applicable_rules
 }
 
-fn is_correctly_ordered(update: &[i8], rule_map: &HashMap<(i8, i8), &PageOrderingRule>) -> bool {
-    let pairs = find_pairs(update);
-    let applicable_rules = find_applicable_rules(&pairs, rule_map);
-    let positions = pages_to_positions(update);
-    for rule in applicable_rules {
-        if !rule.satisfied(&positions) {
-            return false;
-        }
-    }
-    true
-}
-
-fn pages_to_positions(update: &[i8]) -> HashMap<i8, usize> {
+fn pages_to_positions(pages: &[i8]) -> HashMap<i8, usize> {
     let mut map: HashMap<i8, usize> = std::collections::HashMap::new();
-    for (i, page) in update.iter().enumerate() {
+    for (i, page) in pages.iter().enumerate() {
         map.insert(*page, i);
     }
     map
@@ -163,6 +182,12 @@ impl PageOrderingRule {
         let after_index = positions.get(&self.after).unwrap();
         before_index < after_index
     }
+
+    // fn apply(&self, update: &mut Vec<i8>) {
+    //     let before_index = update.iter().position(|&x| x == self.before).unwrap();
+    //     let after_index = update.iter().position(|&x| x == self.after).unwrap();
+    //     update.swap(before_index, after_index);
+    // }
 }
 
 fn get_middle_element(vec: &[i8]) -> i8 {
