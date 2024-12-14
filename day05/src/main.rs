@@ -262,7 +262,7 @@ mod tests {
             vec![97, 13, 75, 29, 47],
         ]
     )]
-    fn test_page_update_order(rules: Vec<PageOrderingRule>, updates: Vec<Vec<i8>>) {
+    fn test_page_update_order_is_correctly_ordered(rules: Vec<PageOrderingRule>, updates: Vec<Vec<i8>>) {
         let rule_map: HashMap<(i8, i8), &PageOrderingRule> = page_ordering_rules_to_map(&rules);
 
         let mut updates: Vec<PageUpdate> = updates.into_iter().map(PageUpdate::new).collect();
@@ -272,4 +272,6 @@ mod tests {
             assert!(update.is_correctly_ordered(&rule_map));
         }
     }
+
+
 }
