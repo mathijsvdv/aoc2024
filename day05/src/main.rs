@@ -327,4 +327,58 @@ mod tests {
         let actual: Vec<Vec<i8>> = updates.into_iter().map(|update| update.pages).collect();
         assert_eq!(actual, expected);
     }
+
+    #[test_case(
+        vec![
+            PageOrderingRule { before: 47, after: 53 },
+            PageOrderingRule { before: 97, after: 13 },
+            PageOrderingRule { before: 97, after: 61 },
+            PageOrderingRule { before: 97, after: 47 },
+            PageOrderingRule { before: 75, after: 29 },
+            PageOrderingRule { before: 61, after: 13 },
+            PageOrderingRule { before: 75, after: 53 },
+            PageOrderingRule { before: 29, after: 13 },
+            PageOrderingRule { before: 97, after: 29 },
+            PageOrderingRule { before: 53, after: 29 },
+            PageOrderingRule { before: 61, after: 53 },
+            PageOrderingRule { before: 97, after: 53 },
+            PageOrderingRule { before: 61, after: 29 },
+            PageOrderingRule { before: 47, after: 13 },
+            PageOrderingRule { before: 75, after: 47 },
+            PageOrderingRule { before: 97, after: 75 },
+            PageOrderingRule { before: 47, after: 61 },
+            PageOrderingRule { before: 75, after: 61 },
+            PageOrderingRule { before: 47, after: 29 },
+            PageOrderingRule { before: 75, after: 13 },
+            PageOrderingRule { before: 53, after: 13 },
+        ],
+        vec![
+            vec![75, 47, 61, 53, 29],
+            vec![97, 61, 53, 29, 13],
+            vec![75, 29, 13],
+            vec![75, 97, 47, 61, 53],
+            vec![61, 13, 29],
+            vec![97, 13, 75, 29, 47],
+        ],
+        123
+    )]
+    fn test_sum_middle_pages(rules: Vec<PageOrderingRule>, updates: Vec<Vec<i8>>, expected: i32) {
+        let rule_map: HashMap<(i8, i8), &PageOrderingRule> = page_ordering_rules_to_map(&rules);
+
+        let mut updates: Vec<PageUpdate> = updates.into_iter().map(PageUpdate::new).collect();
+
+        let mut incorrectly_ordered_updates: Vec<_> = updates
+            .iter_mut()
+            .filter(|update| !update.is_correctly_ordered(&rule_map))
+            .collect();
+
+        for update in &mut incorrectly_ordered_updates {
+            update.order(&rule_map);
+        }
+
+        let incorrectly_ordered_updates: Vec<&PageUpdate> = incorrectly_ordered_updates.iter_mut().map(|update| &**update).collect();
+        let actual = sum_middle_pages(&incorrectly_ordered_updates);
+        assert_eq!(actual, expected);
+    }
+
 }
