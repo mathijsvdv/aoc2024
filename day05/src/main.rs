@@ -228,6 +228,7 @@ impl PageOrderingRule {
 mod tests {
     use super::*;
 
+    // Test that that calling update.order() results in a correctly ordered update
     #[test]
     fn test_page_update_order() {
         let rules = vec![
