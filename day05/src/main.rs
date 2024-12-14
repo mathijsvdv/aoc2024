@@ -60,6 +60,11 @@ impl PageUpdate {
 }
 
 
+fn get_middle_element(vec: &[i8]) -> i8 {
+    vec[vec.len() / 2]
+}
+
+
 // Read the page ordering rules from a file
 fn read_page_ordering_rules(path: &str) -> Vec<PageOrderingRule> {
     let file = File::open(path).expect("File not found");
@@ -183,13 +188,11 @@ impl PageOrderingRule {
         before_index < after_index
     }
 
-    // fn apply(&self, update: &mut Vec<i8>) {
-    //     let before_index = update.iter().position(|&x| x == self.before).unwrap();
-    //     let after_index = update.iter().position(|&x| x == self.after).unwrap();
-    //     update.swap(before_index, after_index);
-    // }
-}
 
-fn get_middle_element(vec: &[i8]) -> i8 {
-    vec[vec.len() / 2]
+
+    fn apply(&self, update: &mut Vec<i8>) {
+        let before_index = update.iter().position(|&x| x == self.before).unwrap();
+        let after_index = update.iter().position(|&x| x == self.after).unwrap();
+        update.swap(before_index, after_index);
+    }
 }
