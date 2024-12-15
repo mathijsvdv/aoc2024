@@ -66,11 +66,10 @@ impl PageUpdate {
     }
 
     fn order(&mut self, rule_map: &HashMap<(i8, i8), &PageOrderingRule>) {
-        let pairs = find_pairs(&self.pages);
-        let applicable_rules = find_applicable_rules(&pairs, rule_map);
-        for rule in applicable_rules {
-            rule.apply(self);
-        }
+        self.pages.sort_by(|a, b| {
+            cmp_pages(a, b, rule_map)
+        });
+        self.positions = pages_to_positions(&self.pages);
     }
 
     fn get_middle_page(&self) -> i8 {
@@ -224,6 +223,21 @@ impl PageOrderingRule {
         update.positions.insert(self.after, before_index);
     }
 }
+
+
+fn cmp_pages(a: &i8, b: &i8, rule_map: &HashMap<(i8, i8), &PageOrderingRule>) -> std::cmp::Ordering {
+    match rule_map.get(&(*a, *b)) {
+        Some(rule) => {
+            if rule.before == *a {
+                std::cmp::Ordering::Less
+            } else {
+                std::cmp::Ordering::Greater
+            }
+        }
+        None => std::cmp::Ordering::Equal,
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
