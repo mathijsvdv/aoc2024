@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-import rustworkx as rw
+import rustworkx as rx
 import numpy as np
 
 
@@ -16,7 +16,7 @@ def load_map() -> np.ndarray:
     return topo_map
 
 
-def map_to_graph(topo_map: np.ndarray) -> tuple[rw.PyDiGraph, np.ndarray]:
+def map_to_graph(topo_map: np.ndarray) -> tuple[rx.PyDiGraph, np.ndarray]:
     """Convert the topological map to a graph indicating which points
     of the map are connected via a trail.
 
@@ -25,7 +25,7 @@ def map_to_graph(topo_map: np.ndarray) -> tuple[rw.PyDiGraph, np.ndarray]:
     """
     n_rows, n_cols = topo_map.shape
 
-    graph = rw.PyDiGraph()
+    graph = rx.PyDiGraph()
     graph_indices = np.zeros((n_rows, n_cols), dtype=np.int32)
     for i in range(n_rows):
         for j in range(n_cols):
@@ -53,7 +53,7 @@ def map_to_graph(topo_map: np.ndarray) -> tuple[rw.PyDiGraph, np.ndarray]:
 @dataclass
 class HikingMap:
     topo_map: np.ndarray
-    graph: rw.PyDiGraph
+    graph: rx.PyDiGraph
     graph_indices: np.ndarray
 
     @classmethod
@@ -81,7 +81,7 @@ class HikingMap:
     def get_trail_ends(self, trail_head: tuple[int, int]) -> list[tuple[int, int]]:
         """Get all trail ends (height 9) that a trail head leads to"""
         node = self.get_graph_index(trail_head)
-        descendants = rw.descendants(self.graph, node)
+        descendants = rx.descendants(self.graph, node)
         trail_ends = [self.get_map_index(d) for d in descendants if self.graph[d] == MAX_HEIGHT]
         return trail_ends
 
@@ -93,7 +93,7 @@ class HikingMap:
         trails = []
         for trail_end in trail_ends:
             end_node = self.get_graph_index(trail_end)
-            paths = rw.all_simple_paths(self.graph, node, end_node)
+            paths = rx.all_simple_paths(self.graph, node, end_node)
             for path in paths:
                 trail = [self.get_map_index(n) for n in path]
                 trails.append(trail)
