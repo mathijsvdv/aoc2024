@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 import rustworkx as rw
-from rustworkx.visit import DFSVisitor
 import numpy as np
 
 
