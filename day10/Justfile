@@ -1,0 +1,3 @@
+profile:
+    @uv run python -m cProfile -o trail.prof trail.py
+    @snakeviz trail.prof
