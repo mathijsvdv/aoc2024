@@ -226,7 +226,11 @@ impl PageOrderingRule {
 
 
 fn cmp_pages(a: &i8, b: &i8, rule_map: &HashMap<(i8, i8), &PageOrderingRule>) -> std::cmp::Ordering {
-    match rule_map.get(&(*a, *b)) {
+    if a == b {
+        return std::cmp::Ordering::Equal;
+    }
+    let key = &(*a, *b).to_unordered_key();
+    match rule_map.get(key) {
         Some(rule) => {
             if rule.before == *a {
                 std::cmp::Ordering::Less
